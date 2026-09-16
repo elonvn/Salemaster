@@ -1,0 +1,771 @@
+<title>Sale Master</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700;900&family=Be+Vietnam+Pro:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root{
+    --bg:#f4f6f7;
+    --surface:#ffffff;
+    --surface-alt:#eaeff1;
+    --ink:#101820;
+    --ink-soft:#4f5f68;
+    --line:#d7dfe3;
+    --navy:#0f2d47;
+    --navy-ink:#ffffff;
+    --gold:#b8823a;
+    --gold-ink:#ffffff;
+    --rose:#a6452c;
+    --teal:#2c6b58;
+    --plum:#6a4a78;
+    --shadow: 0 1px 2px rgba(16,24,32,.04), 0 6px 20px -8px rgba(16,24,32,.12);
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0c1620; --surface:#111f2c; --surface-alt:#172a3a;
+      --ink:#e7edf0; --ink-soft:#9fb0b8; --line:#223546;
+      --navy:#7fb0dd; --navy-ink:#0c1620;
+      --gold:#d9a85c; --gold-ink:#231506;
+      --rose:#d1795f; --teal:#5fae95; --plum:#a687b8;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -10px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0c1620; --surface:#111f2c; --surface-alt:#172a3a;
+    --ink:#e7edf0; --ink-soft:#9fb0b8; --line:#223546;
+    --navy:#7fb0dd; --navy-ink:#0c1620;
+    --gold:#d9a85c; --gold-ink:#231506;
+    --rose:#d1795f; --teal:#5fae95; --plum:#a687b8;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -10px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box;}
+  body{ background:var(--bg); color:var(--ink); font-family:'Be Vietnam Pro','Segoe UI',Arial,sans-serif; font-size:16px; line-height:1.65; }
+  h1,h2,h3,h4{ font-family:'Noto Serif',Georgia,'Times New Roman',serif; color:var(--navy); text-wrap:balance; margin:0; }
+  p{ margin:0 0 14px; max-width:70ch; }
+  a{ color:var(--navy); }
+  ul,ol{ margin:0 0 14px; padding-left:1.3em; }
+  li{ margin-bottom:6px; }
+  hr.rule{ border:none; border-top:1px solid var(--line); margin:38px 0; }
+  strong{ color:var(--navy); }
+  em{ color:var(--ink-soft); }
+  table{ border-collapse:collapse; width:100%; margin:14px 0; font-size:13.5px; }
+  th,td{ border:1px solid var(--line); padding:9px 12px; text-align:left; vertical-align:top; }
+  th{ background:var(--navy); color:var(--navy-ink); font-weight:700; font-size:12.5px; }
+  tr:nth-child(even) td{ background:var(--surface-alt); }
+  .table-wrap{ overflow-x:auto; margin:18px 0; border:1px solid var(--line); border-radius:12px; }
+  .table-wrap table{ margin:0; min-width:560px; }
+  .table-wrap th,.table-wrap td{ border:none; border-bottom:1px solid var(--line); }
+
+  /* ---- shell ---- */
+  .topbar{ position:sticky; top:0; z-index:30; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 20px; background:var(--surface); border-bottom:1px solid var(--line); }
+  .topbar .brand{ display:flex; align-items:center; gap:10px; }
+  .brand-mark{ width:34px; height:34px; border-radius:9px; background:var(--navy); color:var(--navy-ink); display:flex; align-items:center; justify-content:center; font-family:'Noto Serif',serif; font-weight:900; font-size:17px; flex:none; }
+  .brand-text{ font-family:'Noto Serif',serif; font-weight:700; font-size:16px; color:var(--navy); line-height:1.1; }
+  .brand-text small{ display:block; font-family:'Be Vietnam Pro',sans-serif; font-weight:500; font-size:11px; color:var(--ink-soft); }
+  .nav-toggle{ display:none; background:var(--surface-alt); border:1px solid var(--line); border-radius:8px; padding:8px 12px; color:var(--ink); font-size:14px; font-weight:600; cursor:pointer; font-family:'Be Vietnam Pro',sans-serif; }
+
+  .shell{ display:grid; grid-template-columns:264px minmax(0,1fr); gap:0; max-width:1180px; margin:0 auto; }
+  .toc{ position:sticky; top:57px; align-self:start; max-height:calc(100vh - 57px); overflow-y:auto; padding:26px 18px 40px 20px; border-right:1px solid var(--line); }
+  .toc-group{ margin-bottom:16px; }
+  .toc-day{ font-size:10.5px; letter-spacing:.08em; color:var(--gold); margin:18px 0 8px; font-weight:700; }
+  .toc-day:first-child{ margin-top:0; }
+  .toc a{ display:flex; gap:8px; align-items:baseline; text-decoration:none; color:var(--ink-soft); font-size:13.3px; padding:4.5px 8px; border-radius:7px; margin:0 -8px; }
+  .toc a .num{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--gold); flex:none; width:22px; }
+  .toc a:hover{ background:var(--surface-alt); color:var(--ink); }
+  .toc a.active{ background:var(--surface-alt); color:var(--navy); font-weight:600; }
+
+  .content{ padding:0 24px 80px; min-width:0; }
+  section{ padding-top:52px; scroll-margin-top:70px; }
+  section:first-of-type{ padding-top:0; }
+
+  /* ---- hero ---- */
+  .hero{ padding:44px 0 30px; border-bottom:1px solid var(--line); }
+  .hero .tag{ display:inline-block; background:var(--navy); color:var(--navy-ink); padding:5px 13px; border-radius:20px; font-size:11px; letter-spacing:.06em; font-weight:600; margin-bottom:18px; }
+  .hero h1{ font-size:clamp(30px,5vw,46px); line-height:1.06; margin-bottom:12px; }
+  .hero .sub{ font-size:18px; color:var(--ink-soft); max-width:60ch; margin-bottom:20px; }
+  .byline{ display:flex; flex-wrap:wrap; gap:18px; align-items:center; padding-top:16px; border-top:1px dashed var(--line); font-size:14px; color:var(--ink-soft); }
+  .byline b{ color:var(--navy); }
+  .presenter{ display:flex; align-items:center; gap:16px; margin-top:18px; padding-top:18px; border-top:1px dashed var(--line); }
+  .presenter-photo{ width:68px; height:68px; border-radius:50%; object-fit:cover; flex:none; box-shadow:var(--shadow); border:2px solid var(--surface); }
+  .presenter-name{ font-family:'Noto Serif',serif; font-weight:700; font-size:16px; color:var(--navy); }
+  .presenter-title{ font-size:13px; color:var(--ink-soft); }
+
+  /* ---- day divider ---- */
+  .day-divider{ display:flex; align-items:center; gap:16px; margin:56px 0 30px; }
+  .day-divider .d-badge{ font-family:'Noto Serif',serif; font-weight:900; font-size:15px; color:var(--navy-ink); background:var(--navy); padding:10px 20px; border-radius:10px; white-space:nowrap; }
+  .day-divider .d-sub{ font-size:13px; color:var(--ink-soft); }
+  .day-divider .d-line{ flex:1; height:1px; background:var(--line); }
+  section:first-of-type + hr.rule + .day-divider{ margin-top:8px; }
+
+  .sec-head{ display:flex; gap:16px; align-items:flex-start; margin-bottom:20px; }
+  .sec-num{ font-family:'Noto Serif',serif; font-weight:900; font-size:34px; color:var(--line); line-height:1; flex:none; }
+  .sec-head h2{ font-size:24px; line-height:1.16; padding-top:2px; }
+
+  .callout{ border:1px solid var(--line); background:var(--surface); border-radius:var(--radius); padding:18px 20px; margin:18px 0; box-shadow:var(--shadow); }
+  .callout.gold{ border-left:4px solid var(--gold); }
+  .callout-label{ font-size:10.5px; letter-spacing:.07em; color:var(--gold); font-weight:700; margin-bottom:8px; display:block; }
+  .quote{ font-family:'Noto Serif',serif; font-style:italic; font-size:17px; color:var(--navy); border-left:3px solid var(--navy); padding-left:16px; margin:18px 0; }
+
+  /* ---- roadmap (2 day overview) ---- */
+  .roadmap{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:26px 0; }
+  .roadmap-col{ border:1px solid var(--line); border-radius:12px; background:var(--surface); overflow:hidden; box-shadow:var(--shadow); }
+  .roadmap-col h4{ background:var(--navy); color:var(--navy-ink); font-size:13px; padding:12px 16px; }
+  .roadmap-col ul{ margin:0; padding:14px 16px 14px 30px; font-size:13px; }
+  .roadmap-col li{ margin-bottom:7px; }
+  .roadmap-col li b{ color:var(--navy); }
+
+  /* ---- pillars / weapon diagram ---- */
+  .flow3{ display:flex; align-items:center; justify-content:center; gap:8px; margin:22px 0 18px; flex-wrap:wrap; }
+  .flow3 .box{ border:1.5px solid var(--navy); border-radius:8px; padding:12px 18px; font-weight:700; font-size:13px; text-align:center; min-width:100px; }
+  .flow3 .box.closer{ background:var(--teal); color:#fff; border-color:var(--teal); }
+  .flow3 .box.offer{ background:var(--surface); color:var(--navy); }
+  .flow3 .box.customer{ background:var(--rose); color:#fff; border-color:var(--rose); }
+  .flow3 .arrow{ font-size:18px; color:var(--ink-soft); }
+  .offer-grid{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:26px; }
+  .offer-chip{ border:1px solid var(--line); border-radius:8px; padding:8px 12px; font-size:12px; text-align:center; background:var(--surface); }
+  .offer-chip.core{ background:var(--gold); color:#fff; border-color:var(--gold); font-weight:700; }
+
+  /* ---- value equation (Hormozi) ---- */
+  .value-eq{ display:flex; align-items:center; justify-content:center; gap:14px; margin:18px 0 22px; flex-wrap:wrap; }
+  .frac{ text-align:center; }
+  .frac .num-row, .frac .den-row{ display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+  .frac .num-row{ border-bottom:2px solid var(--ink); padding-bottom:8px; margin-bottom:8px; }
+  .eq-box{ border-radius:10px; padding:9px 12px; font-size:12.5px; font-weight:600; text-align:center; min-width:150px; }
+  .eq-box.pos{ background:color-mix(in srgb, var(--teal) 16%, var(--surface)); color:var(--teal); border:1px solid color-mix(in srgb, var(--teal) 40%, var(--line)); }
+  .eq-box.neg{ background:color-mix(in srgb, var(--rose) 16%, var(--surface)); color:var(--rose); border:1px solid color-mix(in srgb, var(--rose) 40%, var(--line)); }
+  .eq-x{ align-self:center; font-family:'Noto Serif',serif; font-size:16px; color:var(--ink-soft); }
+  .eq-sign{ font-family:'Noto Serif',serif; font-size:22px; color:var(--navy); font-weight:700; }
+  .weapon-wrap{ display:flex; justify-content:center; }
+  .weapon{ max-width:520px; width:100%; }
+  .weapon-root{ display:inline-block; background:var(--navy); color:var(--navy-ink); font-weight:700; border-radius:8px; padding:8px 16px; margin-bottom:10px; font-size:13px; }
+  .weapon ul{ list-style:none; margin:0; padding-left:20px; font-size:13.5px; }
+  .weapon li{ position:relative; padding:4px 0 4px 16px; border-left:1.5px solid var(--line); }
+  .weapon li:last-child{ border-left:1.5px solid transparent; }
+  .weapon li::before{ content:""; position:absolute; left:0; top:14px; width:12px; border-top:1.5px solid var(--line); }
+  .weapon .sub{ color:var(--ink-soft); font-size:12px; }
+
+  /* ---- DISC ---- */
+  .disc-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; margin:22px 0; }
+  .disc-card{ border:1px solid var(--line); border-radius:12px; background:var(--surface); box-shadow:var(--shadow); overflow:hidden; }
+  .disc-head{ display:flex; align-items:center; gap:12px; padding:14px 16px; color:#fff; }
+  .disc-badge{ width:38px; height:38px; border-radius:50%; background:rgba(255,255,255,.22); display:flex; align-items:center; justify-content:center; font-family:'Noto Serif',serif; font-weight:900; font-size:16px; flex:none; }
+  .disc-head .name{ font-weight:700; font-size:14px; }
+  .disc-head .symbol{ font-size:11.5px; opacity:.9; }
+  .disc-card[data-g="I"] .disc-head{ background:var(--gold); }
+  .disc-card[data-g="D"] .disc-head{ background:var(--rose); }
+  .disc-card[data-g="S"] .disc-head{ background:var(--teal); }
+  .disc-card[data-g="C"] .disc-head{ background:var(--plum); }
+  .disc-body{ padding:14px 16px; }
+  .disc-body p{ font-size:13px; margin:0 0 8px; }
+  .disc-body .label{ font-size:10.5px; letter-spacing:.05em; color:var(--ink-soft); font-weight:700; margin-bottom:3px; }
+  .disc-approach{ background:var(--surface-alt); border-radius:8px; padding:9px 11px; font-size:12.5px; margin-top:8px; }
+  .disc-approach b{ display:block; font-size:10px; letter-spacing:.05em; color:var(--gold); margin-bottom:3px; font-weight:700; }
+
+  /* ---- psychology grid ---- */
+  .psych-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; margin:22px 0; }
+  .psych-card{ border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:15px 16px; box-shadow:var(--shadow); }
+  .psych-card .p-num{ font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--gold); }
+  .psych-card h4{ font-size:14px; margin:4px 0 6px; }
+  .psych-card p{ font-size:13px; margin:0; color:var(--ink-soft); }
+
+  /* ---- quadrant (tien x thoi gian) ---- */
+  .quadrant-wrap{ margin:26px 0; }
+  .quadrant-axis-top{ display:flex; margin-left:120px; margin-bottom:6px; }
+  .quadrant-axis-top span{ flex:1; text-align:center; font-size:11.5px; color:var(--ink-soft); font-weight:600; }
+  .quadrant-row{ display:flex; align-items:stretch; }
+  .quadrant-axis-side{ width:120px; display:flex; align-items:center; justify-content:center; text-align:center; font-size:11.5px; color:var(--ink-soft); font-weight:600; padding-right:10px; }
+  .quadrant-cell{ flex:1; border:1px solid var(--line); padding:14px 16px; font-size:12.5px; min-height:120px; }
+  .quadrant-cell h5{ font-family:'Noto Serif',serif; color:var(--navy); font-size:13.5px; margin-bottom:6px; }
+  .quadrant-cell.hard{ background:color-mix(in srgb, var(--rose) 10%, var(--surface)); }
+  .quadrant-cell.best{ background:color-mix(in srgb, var(--teal) 12%, var(--surface)); }
+
+  /* ---- quickref (15 techniques) ---- */
+  .quickref{ display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:22px 0 28px; }
+  .qr-item{ border-radius:10px; padding:9px 8px; text-align:center; border:1px solid var(--line); background:var(--surface-alt); font-size:11.3px; line-height:1.3; }
+  .qr-item .qr-num{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:12.5px; color:var(--gold); display:block; margin-bottom:2px; }
+
+  .tech-list{ display:flex; flex-direction:column; gap:12px; margin:18px 0; }
+  .tech-row{ display:flex; gap:14px; border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:var(--surface); box-shadow:var(--shadow); }
+  .tech-row .t-num{ font-family:'Noto Serif',serif; font-weight:900; font-size:20px; color:var(--line); flex:none; width:32px; }
+  .tech-row h4{ font-size:14.5px; margin-bottom:4px; }
+  .tech-row p{ font-size:13.3px; margin:0; color:var(--ink-soft); }
+
+  /* ---- flow4 (Biet Thich Tin Mua) ---- */
+  .flow4{ display:flex; align-items:center; justify-content:center; gap:6px; margin:26px 0; flex-wrap:wrap; }
+  .flow4 .node{ display:flex; flex-direction:column; align-items:center; gap:8px; width:120px; }
+  .flow4 .icon{ width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; box-shadow:var(--shadow); }
+  .flow4 .node:nth-child(1) .icon{ background:var(--navy); }
+  .flow4 .node:nth-child(3) .icon{ background:var(--rose); }
+  .flow4 .node:nth-child(5) .icon{ background:var(--gold); }
+  .flow4 .node:nth-child(7) .icon{ background:var(--teal); }
+  .flow4 .node b{ font-family:'Noto Serif',serif; font-size:14px; color:var(--ink); }
+  .flow4 .arrow{ font-size:20px; color:var(--ink-soft); }
+
+  .stepper{ position:relative; margin:26px 0; padding-left:34px; }
+  .stepper::before{ content:""; position:absolute; left:11px; top:6px; bottom:6px; width:2px; background:var(--line); }
+  .step{ position:relative; padding-bottom:20px; }
+  .step:last-child{ padding-bottom:0; }
+  .step::before{ content:""; position:absolute; left:-34px; top:2px; width:22px; height:22px; border-radius:50%; background:var(--navy); border:3px solid var(--bg); }
+  .step h4{ font-size:15px; margin-bottom:4px; color:var(--navy); }
+  .step p{ font-size:13.3px; color:var(--ink-soft); margin:0; }
+
+  /* ---- objection cards ---- */
+  .obj-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin:22px 0; }
+  .obj-card{ border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:18px; box-shadow:var(--shadow); }
+  .obj-card h4{ font-size:11px; color:var(--ink-soft); font-family:'Be Vietnam Pro',sans-serif; font-weight:700; letter-spacing:.03em; margin-bottom:6px; }
+  .obj-quote{ font-family:'Noto Serif',serif; font-style:italic; font-size:16px; color:var(--rose); margin-bottom:10px; }
+  .obj-card p{ font-size:13.3px; margin:0; }
+
+  footer{ margin-top:60px; padding-top:24px; border-top:1px solid var(--line); font-size:12.5px; color:var(--ink-soft); display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+
+  @media (max-width: 900px){
+    .shell{ grid-template-columns:1fr; }
+    .toc{ position:static; max-height:none; border-right:none; border-bottom:1px solid var(--line); display:none; padding:14px 20px; }
+    .toc.open{ display:block; }
+    .nav-toggle{ display:inline-block; }
+    .content{ padding:0 18px 60px; }
+    .quickref{ grid-template-columns:repeat(2,1fr); }
+    .roadmap{ grid-template-columns:1fr; }
+    .quadrant-axis-side{ width:80px; font-size:10.5px; }
+    .quadrant-axis-top{ margin-left:80px; }
+  }
+  @media (max-width:480px){
+    .hero h1{ font-size:28px; }
+    .flow3 .box{ min-width:80px; padding:10px 12px; font-size:11.5px; }
+  }
+</style>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">S</div>
+    <div class="brand-text">SALE MASTER<small>Salomon Education · nội bộ</small></div>
+  </div>
+  <button class="nav-toggle" id="navToggle" type="button">Mục lục ☰</button>
+</div>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <div class="toc-group">
+      <div class="toc-day">PHẦN 1 — NỀN TẢNG SALE</div>
+      <a href="#recap"><span class="num">00</span>Nhắc lại buổi sáng</a>
+      <a href="#pillars"><span class="num">01</span>Trụ cột &amp; Vũ khí</a>
+      <a href="#skills"><span class="num">02</span>Hai kỹ năng sống còn</a>
+      <a href="#beliefs"><span class="num">03</span>Hệ thống niềm tin</a>
+      <a href="#disc"><span class="num">04</span>Công cụ DISC</a>
+      <a href="#rapport"><span class="num">05</span>Xây mối quan hệ</a>
+      <a href="#psychology"><span class="num">06</span>Tâm lý học ứng dụng</a>
+      <a href="#quadrant"><span class="num">07</span>Tử huyệt khách hàng</a>
+      <a href="#leverage"><span class="num">08</span>Mô hình đòn bẩy</a>
+      <a href="#closer"><span class="num">09</span>Nghề Closer</a>
+    </div>
+    <div class="toc-group">
+      <div class="toc-day">PHẦN 2 — CHIẾN THUẬT SALE</div>
+      <a href="#principle"><span class="num">10</span>Nguyên tắc gốc</a>
+      <a href="#closing15"><span class="num">11</span>15 kỹ thuật Closing</a>
+      <a href="#bttm"><span class="num">12</span>Biết→Thích→Tin→Mua</a>
+      <a href="#objections"><span class="num">13</span>Xử lý từ chối</a>
+      <a href="#probability"><span class="num">14</span>Tư duy xác suất</a>
+      <a href="#honest"><span class="num">15</span>Nói khéo, không nói dối</a>
+      <a href="#texting"><span class="num">16</span>Nhắn tin chăm sóc</a>
+    </div>
+  </nav>
+
+  <main class="content">
+
+    <section class="hero" id="top">
+      <span class="tag">TÀI LIỆU ĐÀO TẠO NỘI BỘ</span>
+      <h1>Sale Master</h1>
+      <p class="sub">Chương trình đào tạo Sale của Salomon Education, gồm 2 phần — Phần 1: Nền tảng Sale &amp; Phần 2: Chiến thuật Sale, gộp lại thành một tài liệu học liên tục cho cộng sự Sale mới.</p>
+      <div class="byline">
+        <span>Chương trình: <b>SALE MASTER</b></span>
+        <span>Đơn vị: Salomon Education</span>
+        <span>Đối tượng: Cộng sự Sale mới</span>
+      </div>
+      <div class="presenter">
+        <img class="presenter-photo" src="data:image/jpeg;base64,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" alt="Hoàng Nam">
+        <div>
+          <div class="presenter-name">Hoàng Nam</div>
+          <div class="presenter-title">Founder Scale Ventures</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="roadmap" id="roadmap" style="margin-top:30px;">
+      <div class="roadmap-col">
+        <h4>PHẦN 1 — NỀN TẢNG SALE</h4>
+        <ul>
+          <li><b>Ba trụ cột:</b> Closer – Offer – Customer, và "vũ khí" của người Closer</li>
+          <li><b>Offer:</b> công thức giá trị (Value Equation) của Alex Hormozi &amp; 5 yếu tố cấu thành</li>
+          <li><b>2 kỹ năng sống còn:</b> Marketing &amp; Bán hàng</li>
+          <li><b>Hệ thống niềm tin</b> của người bán hàng giỏi</li>
+          <li><b>DISC:</b> nhận diện 4 nhóm tính cách khách hàng</li>
+          <li><b>Xây mối quan hệ:</b> điểm chung, cho đi trước, khen, follow-up</li>
+          <li><b>Tâm lý học ứng dụng:</b> social proof, FOMO, khan hiếm, uy tín, đối ứng, mỏ neo</li>
+          <li><b>Tử huyệt khách hàng:</b> phân loại theo tiền &amp; thời gian</li>
+          <li><b>Mô hình đòn bẩy</b> và nghề Closer</li>
+        </ul>
+      </div>
+      <div class="roadmap-col">
+        <h4>PHẦN 2 — CHIẾN THUẬT SALE</h4>
+        <ul>
+          <li><b>Nguyên tắc gốc:</b> luôn nói điều có lợi cho khách hàng</li>
+          <li><b>15 kỹ thuật Closing</b> — kịch bản chốt đơn cụ thể</li>
+          <li><b>Frame Work:</b> Biết → Thích → Tin → Mua</li>
+          <li><b>Xử lý từ chối:</b> giá cao, không thời gian, không tiền, không nhu cầu, hỏi người thân, không tin tưởng</li>
+          <li><b>Tư duy xác suất</b> &amp; nguyên tắc theo sát dài hạn</li>
+          <li><b>Nghệ thuật nói khéo</b> — không nói dối</li>
+          <li><b>Kỹ năng nhắn tin</b> chăm sóc khách hàng</li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="rule">
+
+    <div class="day-divider"><div class="d-line"></div><div class="d-badge">PHẦN 1 · NỀN TẢNG SALE</div><div class="d-line"></div></div>
+
+    <section id="recap">
+      <div class="sec-head"><span class="sec-num">00</span><h2>Nhắc lại buổi sáng</h2></div>
+      <p>Trước khi vào tài liệu này, đội ngũ đã học ba nội dung nền tảng:</p>
+      <ol>
+        <li><strong>Bản chất của bán hàng:</strong> về cơ bản chỉ gồm người bán – lời chào hàng (offer) – người mua. Có tâm, có năng lượng cao đến đâu mà không chốt được đơn thì cũng chưa đạt mục tiêu — chốt đơn là kỹ năng bắt buộc phải học tốt.</li>
+        <li><strong>Xử lý niềm tin giới hạn</strong> bên trong bản thân — nhận diện tư duy đang cản trở mình, thay bằng niềm tin có lợi để phát triển.</li>
+        <li>Sau khi đã "bán được cho chính mình", bước tiếp theo là <strong>hiểu khách hàng</strong>: họ là ai, mong muốn gì, có rào cản gì, và cần giúp họ vượt qua rào cản đó với niềm tin rằng sản phẩm sẽ giúp cuộc sống họ tốt hơn.</li>
+      </ol>
+      <p>Tài liệu này tiếp tục từ phần "hiểu khách hàng", đi vào công cụ DISC, tâm lý học trong bán hàng, và cách xây dựng mối quan hệ với khách hàng.</p>
+    </section>
+
+    <hr class="rule">
+
+    <section id="pillars">
+      <div class="sec-head"><span class="sec-num">01</span><h2>Ba trụ cột của một giao dịch bán hàng</h2></div>
+      <p>Một giao dịch bán hàng (Closing) luôn xoay quanh 3 nhân vật và 1 hành động: <strong>CLOSER</strong> (người chốt đơn) – <strong>OFFER</strong> (lời chào hàng/giải pháp) – <strong>CUSTOMER</strong> (khách hàng), và toàn bộ quá trình đó gọi là <strong>CLOSING</strong>.</p>
+
+      <div class="flow3">
+        <div class="box closer">CLOSER</div><span class="arrow">→</span>
+        <div class="box offer">OFFER</div><span class="arrow">→</span>
+        <div class="box customer">CUSTOMER</div>
+      </div>
+
+      <p style="text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:-4px;">Offer là nơi quyết định phần lớn giá trị mà khách hàng cảm nhận được — theo <strong>công thức Grand Slam / Value Equation</strong> của Alex Hormozi:</p>
+      <div class="value-eq">
+        <span class="eq-sign">Giá trị =</span>
+        <div class="frac">
+          <div class="num-row">
+            <div class="eq-box pos">Kết quả mơ ước</div>
+            <span class="eq-x">×</span>
+            <div class="eq-box pos">Xác suất thành công được cảm nhận</div>
+          </div>
+          <div class="den-row">
+            <div class="eq-box neg">Sự trì hoãn thời gian</div>
+            <span class="eq-x">×</span>
+            <div class="eq-box neg">Nỗ lực &amp; sự hy sinh</div>
+          </div>
+        </div>
+      </div>
+      <p style="text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:-4px;">Cụ thể hoá thành một Offer thuyết phục, giá trị này thường cấu thành từ 5 yếu tố:</p>
+      <div class="offer-grid">
+        <div class="offer-chip">Sự khan hiếm</div>
+        <div class="offer-chip">Sự khẩn cấp</div>
+        <div class="offer-chip core">Sản phẩm</div>
+        <div class="offer-chip">Quà tặng</div>
+        <div class="offer-chip">Sự đảm bảo / cam kết</div>
+      </div>
+
+      <h3 style="font-size:16px;margin-bottom:10px;">"Vũ khí" của người Closer</h3>
+      <p>Để đứng vai trò Closer tốt, mỗi người cần trang bị cho mình các "vũ khí" sau:</p>
+      <div class="weapon-wrap">
+        <div class="weapon">
+          <div class="weapon-root">VŨ KHÍ CỦA CLOSER</div>
+          <ul>
+            <li>Niềm tin
+              <ul>
+                <li>Vào chính mình <span class="sub">— đổi niềm tin giới hạn thành niềm tin tích cực</span></li>
+                <li>Vào sản phẩm</li>
+                <li>Vào khách hàng <span class="sub">— tin họ xứng đáng và có khả năng chi trả</span></li>
+              </ul>
+            </li>
+            <li>Năng lượng <span class="sub">— trạng thái tinh thần khi tiếp cận khách hàng</span></li>
+            <li>Kỹ thuật Closing <span class="sub">— học chi tiết ở Phần 2</span></li>
+            <li>Giá trị bản thân <span class="sub">— thể hiện là người có chuyên môn, đủ uy tín</span></li>
+            <li>Khả năng nắm bắt tâm lý khách hàng</li>
+            <li>Tâm lý của người bán
+              <ul>
+                <li>Tập trung giúp đỡ khách hàng</li>
+                <li>Hiểu rõ khách hàng quan tâm điều gì</li>
+                <li>Luôn ưu tiên lợi ích khách hàng lên đầu tiên</li>
+              </ul>
+            </li>
+            <li>Sự tự tin <span class="sub">— đến từ việc hiểu rõ sản phẩm</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <section id="skills">
+      <div class="sec-head"><span class="sec-num">02</span><h2>Hai kỹ năng sống còn để thành công trong kinh doanh</h2></div>
+      <p>Chỉ giỏi bán hàng thôi chưa đủ để giàu — rất nhiều người bán hàng giỏi nhưng vẫn chưa giàu, vì sản phẩm họ chọn không tốt, tệp khách hàng quá nhỏ, hoặc giá trị đơn hàng quá thấp. Ngoài kỹ năng bán hàng, mỗi người cần phát triển đồng thời:</p>
+      <ol>
+        <li><strong>Marketing</strong> — khả năng thu hút và mang khách hàng tiềm năng về.</li>
+        <li><strong>Bán hàng (Sales)</strong> — khả năng chuyển đổi khách hàng tiềm năng thành khách hàng trả tiền.</li>
+      </ol>
+      <p>Marketing đưa khách hàng về, Sales chuyển đổi khách hàng thành doanh thu — hai kỹ năng này bổ trợ cho nhau; nếu chỉ mạnh một trong hai, hiệu quả kinh doanh sẽ bị giới hạn.</p>
+    </section>
+
+    <hr class="rule">
+
+    <section id="beliefs">
+      <div class="sec-head"><span class="sec-num">03</span><h2>Hệ thống niềm tin của người bán hàng giỏi</h2></div>
+      <p>Một người bán hàng giỏi cần xây dựng hệ thống niềm tin sau (niềm tin quan trọng nhất liệt kê trước):</p>
+      <ol>
+        <li>Tin tưởng tuyệt đối vào bản thân — <strong>đây là niềm tin quan trọng nhất.</strong></li>
+        <li>Tin rằng bán hàng là đang giúp đỡ khách hàng.</li>
+        <li>Tin rằng bán hàng là đang trao giá trị.</li>
+        <li>Tin rằng sản phẩm của mình là tốt nhất trên thị trường.</li>
+        <li>Tin rằng khách hàng có đủ khả năng tài chính để mua.</li>
+        <li>Tin rằng khách hàng trước sau cũng sẽ mua sản phẩm của mình.</li>
+        <li>Tin rằng mọi người xung quanh đều là khách hàng tiềm năng — dù ở trạng thái nào.</li>
+      </ol>
+      <div class="callout gold">
+        <span class="callout-label">GHI NHỚ</span>
+        <p style="margin:0"><strong>Năng lượng + Niềm tin quyết định khoảng 90% thành công trong bán hàng</strong> — phần kỹ thuật chỉ là phần còn lại. Đây là lý do chương trình luôn ưu tiên xây nền tảng tư duy/niềm tin trước khi vào kỹ thuật.</p>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <section id="disc">
+      <div class="sec-head"><span class="sec-num">04</span><h2>Hiểu khách hàng bằng công cụ DISC</h2></div>
+      <p>Chỉ nghe khách hàng nói và cảm nhận bằng trực giác là không đủ — nhiều người chưa hiểu rõ chính bản thân họ, và một số người "diễn" giao tiếp rất khéo nhưng thực chất không đáng tin. Công cụ thực tế và dễ ứng dụng ngay trong bán hàng là <strong>DISC</strong> — hữu ích không chỉ trong bán hàng mà cả trong chọn đối tác, chọn nhân sự, đời sống cá nhân.</p>
+      <div class="callout gold">
+        <span class="callout-label">LƯU Ý</span>
+        <p style="margin:0">DISC không đúng 100% với tất cả mọi người, và một người có thể thay đổi nhóm tính cách theo thời gian khi rèn luyện/phát triển bản thân — DISC chỉ phản ánh tính cách <strong>tại thời điểm hiện tại</strong>, không phải nhãn cố định suốt đời. Phần lớn mọi người là sự pha trộn giữa 2 nhóm, trong đó có một nhóm trội hơn.</p>
+      </div>
+
+      <div class="disc-grid">
+        <div class="disc-card" data-g="I">
+          <div class="disc-head"><div class="disc-badge">I</div><div><div class="name">Influence — Ảnh hưởng</div><div class="symbol">Biểu tượng: chim công</div></div></div>
+          <div class="disc-body">
+            <div class="label">ĐẶC ĐIỂM</div>
+            <p>Hướng ngoại, năng khiếu giao tiếp tự nhiên, dễ kết bạn, nhiều năng lượng, hài hước, lạc quan, thích sự chú ý, ăn mặc chăm chút/nổi bật. Giàu cảm xúc, thấu cảm tốt. Phù hợp: marketing, sale, MC, nghệ sĩ.</p>
+            <div class="label">CẦN CẢI THIỆN</div>
+            <p>Ghét sự lặp lại, ghét việc chi tiết/số liệu, không giỏi quản lý tài chính (hào phóng, dễ cho đi/bao người khác).</p>
+            <div class="disc-approach"><b>CÁCH TIẾP CẬN</b>Khen ngợi — nhóm này rất thích được khen, kể cả biết là xã giao vẫn thấy vui; nói chuyện năng lượng tích cực, cảm xúc.</div>
+          </div>
+        </div>
+        <div class="disc-card" data-g="D">
+          <div class="disc-head"><div class="disc-badge">D</div><div><div class="name">Dominance — Thống trị</div><div class="symbol">Biểu tượng: đại bàng</div></div></div>
+          <div class="disc-body">
+            <div class="label">ĐẶC ĐIỂM</div>
+            <p>Quyết đoán, độc lập, mạnh mẽ, kỷ luật cao, tập trung vào kết quả, thích cạnh tranh/thử thách. Thường là người dẫn đầu, phù hợp vai trò lãnh đạo/quản lý.</p>
+            <div class="label">CẦN CẢI THIỆN</div>
+            <p>Đôi khi vô tâm với cảm xúc người khác, không thích nghe xin lỗi/trình bày dài dòng, đôi khi bảo thủ.</p>
+            <div class="disc-approach"><b>CÁCH TIẾP CẬN</b>Đi thẳng vào vấn đề, ngắn gọn, rõ ràng, đưa quyết định nhanh — đừng vòng vo, đừng "chăm sóc" quá mức.</div>
+          </div>
+        </div>
+        <div class="disc-card" data-g="S">
+          <div class="disc-head"><div class="disc-badge">S</div><div><div class="name">Steadiness — Ổn định</div><div class="symbol">Biểu tượng: chim bồ câu</div></div></div>
+          <div class="disc-body">
+            <div class="label">ĐẶC ĐIỂM</div>
+            <p>Yêu hoà bình, thân thiện, hoà đồng, không thích xung đột, giỏi lắng nghe, tinh tế, thích chăm sóc/phục vụ người khác, làm việc nhóm tốt.</p>
+            <div class="label">CẦN CẢI THIỆN</div>
+            <p>Nhút nhát, thụ động, sợ bị bỏ rơi/từ chối, ngại ra quyết định, khó làm việc trong môi trường cạnh tranh cao.</p>
+            <div class="disc-approach"><b>CÁCH TIẾP CẬN</b>Chủ động và quyết định thay họ một cách dứt khoát (đề xuất rõ phương án, dẫn dắt), vẫn giữ sự nhẹ nhàng, đồng cảm.</div>
+          </div>
+        </div>
+        <div class="disc-card" data-g="C">
+          <div class="disc-head"><div class="disc-badge">C</div><div><div class="name">Compliance — Tuân thủ</div><div class="symbol">Biểu tượng: con cú</div></div></div>
+          <div class="disc-body">
+            <div class="label">ĐẶC ĐIỂM</div>
+            <p>Sống nguyên tắc, kỷ luật, cẩn thận, chi tiết, chặt chẽ với số liệu, thực tế, trách nhiệm cao. Phù hợp: kế toán, kiểm toán, IT, phân tích, nghiên cứu.</p>
+            <div class="label">CẦN CẢI THIỆN</div>
+            <p>Ngại thay đổi, cần nhiều thời gian ra quyết định, đôi khi bảo thủ, cầu toàn quá mức.</p>
+            <div class="disc-approach"><b>CÁCH TIẾP CẬN</b>Cung cấp bằng chứng, số liệu, kết quả cụ thể — trình bày ngắn gọn, có cấu trúc, kiên nhẫn vì họ cần thời gian xử lý thông tin.</div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-size:16px;margin:24px 0 10px;">Cách nhận diện nhóm DISC của khách hàng</h3>
+      <p>Có thể quan sát qua: <strong>giọng nói</strong> (nhanh, mạnh mẽ, dứt khoát → D/I; nhẹ nhàng, chậm, từ tốn → S/C), <strong>cách giao tiếp</strong> (ngắn gọn, đi thẳng vấn đề → D/C; nói nhiều, dài dòng → I/S; hay hỏi số liệu → C), <strong>trang phục</strong> (nổi bật, nhiều màu → I; nghiêm túc, đơn giản → C/D), và <strong>hành vi/nội dung đăng tải</strong> (chia sẻ đời sống cá nhân, năng lượng cao → I; ít chia sẻ, nội dung công việc → C/D; quan tâm/hỗ trợ người khác → S).</p>
+      <p>Với trường hợp khó nhận diện, cần dành thêm thời gian quan sát thay vì kết luận vội. Phần lớn trường hợp thực tế là <strong>sự pha trộn của 2 nhóm</strong>, trong đó có 1 nhóm trội hơn. Người bán hàng giỏi cần hiểu rõ mình thuộc nhóm nào trước, để biết điểm mạnh/yếu bản thân, rồi mới linh hoạt điều chỉnh cách tiếp cận với từng nhóm khách hàng — không áp một phong cách duy nhất cho tất cả.</p>
+      <p>Tuy nhiên, DISC chỉ là công cụ hỗ trợ nhận diện nhanh, không phải cái cớ để chần chừ. Với khách khó đoán nhóm, cách an toàn nhất vẫn là giữ năng lượng cao và chủ động dẫn dắt cuộc trò chuyện như với mọi khách hàng, thay vì chờ "đoán đúng" tính cách rồi mới hành động — phân loại quá kỹ đôi khi lại trở thành lý do để ngại chốt.</p>
+    </section>
+
+    <hr class="rule">
+
+    <section id="rapport">
+      <div class="sec-head"><span class="sec-num">05</span><h2>Nghệ thuật xây dựng mối quan hệ với khách hàng</h2></div>
+      <p>Trước khi bán được hàng, cần xây dựng được mối quan hệ/kết nối với khách hàng:</p>
+      <div class="stepper">
+        <div class="step"><h4>1. Tìm điểm chung</h4><p>Quê hương, sở thích, cùng học một khoá/một thầy, độ tuổi, nghề nghiệp, hoặc qua người quen chung. Chủ động nhắc đến và khen ngợi điểm chung một cách tự nhiên.</p></div>
+        <div class="step"><h4>2. Cho đi trước — "Giver's Win"</h4><p>Người cho đi nhiều nhất, không toan tính, thường thắng lớn về lâu dài: quà tặng, tài liệu giá trị, tư vấn miễn phí, giới thiệu mối quan hệ hữu ích. Cho đi xây dựng niềm tin và kích hoạt tâm lý đối ứng.</p></div>
+        <div class="step"><h4>3. Khen ngợi</h4><p>Tất cả nhóm DISC đều thích được khen — ngay cả khi biết có phần xã giao. Khen đúng lúc, đúng chỗ tạo cảm xúc tích cực trong cuộc trò chuyện.</p></div>
+        <div class="step"><h4>4. Follow-up — chăm sóc và theo sát</h4><p>"Sự thịnh vượng nằm ở việc theo sát." Rất nhiều cơ hội mất không phải vì khách từ chối hẳn, mà vì người bán không theo sát đến cùng.</p></div>
+        <div class="step"><h4>5. Trở thành khách hàng của người giỏi hơn mình</h4><p>Mua sản phẩm/tham gia cộng đồng của các chuyên gia hàng đầu — khi đã là khách hàng/học viên, cơ hội được kết nối tự nhiên nhiều hơn so với tiếp cận từ vị trí người lạ.</p></div>
+      </div>
+    </section>
+
+    <hr class="rule">
+
+    <section id="psychology">
+      <div class="sec-head"><span class="sec-num">06</span><h2>Tâm lý học ứng dụng trong bán hàng</h2></div>
+      <p>Phần lớn quyết định mua hàng không đến từ lý trí/logic hoàn toàn, mà từ những cơ chế tâm lý vô thức:</p>
+      <div class="psych-grid">
+        <div class="psych-card"><span class="p-num">01</span><h4>Bằng chứng xã hội</h4><p>Tin và chọn thứ được nhiều người khác lựa chọn/đánh giá tốt. Feedback, review, số lượng học viên đã dùng là bằng chứng xã hội hiệu quả.</p></div>
+        <div class="psych-card"><span class="p-num">02</span><h4>Cảm giác "hời"</h4><p>Giảm giá, tặng thêm quà tạo cảm giác được lợi hơn bình thường — thúc đẩy quyết định mua nhanh hơn.</p></div>
+        <div class="psych-card"><span class="p-num">03</span><h4>FOMO — sợ bỏ lỡ</h4><p>Sợ người khác có được điều mình không có, sợ bị "bỏ lại phía sau" so với người khác.</p></div>
+        <div class="psych-card"><span class="p-num">04</span><h4>Khan hiếm &amp; Khẩn cấp</h4><p>Giới hạn số lượng hoặc thời gian thúc đẩy quyết định nhanh hơn vì sợ mất cơ hội — càng cụ thể càng hiệu quả.</p></div>
+        <div class="psych-card"><span class="p-num">05</span><h4>Uy tín / Thẩm quyền</h4><p>Tin lời chuyên gia/người có uy tín trong lĩnh vực. Feedback từ khách hàng có sức ảnh hưởng có giá trị thuyết phục lớn hơn feedback thông thường.</p></div>
+        <div class="psych-card"><span class="p-num">06</span><h4>Hiệu ứng đối ứng</h4><p>Nhận được giá trị/sự giúp đỡ, con người có xu hướng muốn "trả lại" — vì sao "cho đi trước" hiệu quả.</p></div>
+        <div class="psych-card"><span class="p-num">07</span><h4>Hiệu ứng mỏ neo</h4><p>Đưa giá "gốc" cao trước, rồi đưa giá ưu đãi — khách cảm thấy giá sau rẻ và hời hơn nhiều.</p></div>
+      </div>
+      <p style="font-size:13.5px;color:var(--ink-soft);">Những hiệu ứng này vận hành phần lớn trong vô thức (ví dụ tâm lý "bầy đàn" tồn tại từ thời con người sống theo bộ lạc để tồn tại) — khi ứng dụng, người bán hàng không cần và không nên chỉ dựa vào thuyết phục bằng logic thuần túy.</p>
+    </section>
+
+    <hr class="rule">
+
+    <section id="quadrant">
+      <div class="sec-head"><span class="sec-num">07</span><h2>Hiểu "tử huyệt" khách hàng — Tiền bạc &amp; Thời gian</h2></div>
+      <p>Ngoài tính cách (DISC), một góc nhìn quan trọng khác là xem khách hàng đang thiếu <strong>tiền</strong>, thiếu <strong>thời gian</strong>, hay thiếu cả hai:</p>
+      <div class="quadrant-wrap">
+        <div class="quadrant-axis-top"><span>KHÔNG CÓ THỜI GIAN</span><span>CÓ THỜI GIAN</span></div>
+        <div class="quadrant-row">
+          <div class="quadrant-axis-side">KHÔNG<br>CÓ TIỀN</div>
+          <div class="quadrant-cell hard"><h5>Khó khăn nhất</h5>Thường đang gặp nhiều vấn đề cùng lúc. Khó chốt nhất, cần đánh giá kỹ trước khi đầu tư nhiều thời gian tư vấn.</div>
+          <div class="quadrant-cell"><h5>Có thời gian, không tiền</h5>Có thời gian tìm hiểu/học hỏi nhưng khả năng chi trả hạn chế. Cần phương án hỗ trợ tài chính (trả góp, giá thấp hơn).</div>
+        </div>
+        <div class="quadrant-row">
+          <div class="quadrant-axis-side">CÓ<br>TIỀN</div>
+          <div class="quadrant-cell"><h5>Có tiền, không thời gian</h5>Đang kinh doanh/làm việc rất bận, thu nhập tốt nhưng không có thời gian tận hưởng. Phù hợp sản phẩm giúp <strong>tiết kiệm thời gian, tạo thu nhập chủ động</strong>.</div>
+          <div class="quadrant-cell best"><h5>"Tỷ phú thời gian"</h5>Nhóm dễ chốt nhất — có cả tiền và thời gian. Ưu tiên tiếp cận và chăm sóc kỹ nhóm này.</div>
+        </div>
+      </div>
+      <p>Với nhóm "có tiền, không thời gian", thông điệp hiệu quả xoay quanh việc sản phẩm/mô hình có thể vận hành <strong>không cần lộ mặt, không cần nhiều vốn/nhân sự, làm ít nhưng hiệu quả, tạo thu nhập chủ động</strong> — đây là lý do các mô hình kinh doanh online, thu nhập từ hệ thống/đòn bẩy thường thu hút nhóm khách hàng bận rộn nhưng tài chính tốt.</p>
+      <p>Cần lưu ý thêm: <strong>"không có tiền" hiếm khi là rào cản tuyệt đối</strong> — phần lớn là vấn đề mức độ khát khao/niềm tin chưa đủ lớn, chứ không phải bài toán số học đơn thuần, vì hầu như luôn có cách xoay được tiền (trả góp, vay, thu xếp lại tài chính...) nếu người ta thực sự muốn. Vì vậy với nhóm này, đừng vội xếp vào "khó chốt nhất" rồi giảm ưu tiên chăm sóc — việc cần làm là tăng mức độ mong muốn của khách và đưa ra phương án tài chính linh hoạt hơn.</p>
+    </section>
+
+    <hr class="rule">
+
+    <section id="leverage">
+      <div class="sec-head"><span class="sec-num">08</span><h2>Sức mạnh của mô hình "đòn bẩy"</h2></div>
+      <p>Người bán hàng giỏi <strong>không nhất thiết phải tự mình chốt mọi thứ bằng nỗ lực cá nhân</strong> — có thể bán thông qua một hệ thống hoặc đòn bẩy (một mô hình kinh doanh/hệ thống uy tín có sẵn, một sản phẩm được nhiều người tin dùng), giúp khách hàng đạt được điều họ mong muốn mà không cần bản thân người bán phải là người có kết quả lớn nhất trong hệ thống đó.</p>
+      <p>Điểm mấu chốt vẫn là: <strong>hiểu rõ khách hàng thực sự đang mong muốn điều gì</strong>, rồi giới thiệu đúng giải pháp/cơ hội phù hợp — không cần "diễn" hay phóng đại, chỉ cần hiểu đúng nhu cầu và giới thiệu đúng giải pháp.</p>
+      <p>Dù vậy, đòn bẩy/hệ thống không thay được <strong>khối lượng hành động cá nhân</strong> — nếu tỉ lệ chốt còn thấp, việc cần làm không phải là dựa nhiều hơn vào hệ thống, mà là nhân 10 lần số lượng khách tiếp cận mỗi ngày.</p>
+    </section>
+
+    <hr class="rule">
+
+    <section id="closer">
+      <div class="sec-head"><span class="sec-num">09</span><h2>Nghề Closer — cơ hội hiếm có tại Việt Nam</h2></div>
+      <p>Nghề <strong>Closer</strong> (người chuyên chốt các đơn hàng giá trị lớn — "high-ticket closer") hiện vẫn còn rất ít người làm được tại Việt Nam một cách chuyên nghiệp, trong khi đây là vị trí có thể mang lại:</p>
+      <ul>
+        <li>Thu nhập cao, tính theo hoa hồng trên giá trị đơn hàng chốt được.</li>
+        <li>Sự tự do về địa điểm làm việc — làm từ bất cứ đâu, chỉ cần kết nối để gọi/gặp khách hàng.</li>
+        <li>Khả năng phát triển không giới hạn theo năng lực cá nhân.</li>
+      </ul>
+      <p>Để làm tốt vị trí Closer, cần tổng hợp đầy đủ các yếu tố đã học: niềm tin, năng lượng, hiểu sản phẩm, có tâm giúp đỡ khách hàng, và kỹ thuật chốt (học chi tiết ở Phần 2).</p>
+    </section>
+
+    <hr class="rule">
+
+    <div class="day-divider"><div class="d-line"></div><div class="d-badge">PHẦN 2 · CHIẾN THUẬT SALE</div><div class="d-line"></div></div>
+
+    <section id="principle">
+      <div class="sec-head"><span class="sec-num">10</span><h2>Nguyên tắc gốc: Luôn nói điều có lợi cho khách hàng</h2></div>
+      <p>Trong suốt cuộc trò chuyện với khách hàng — từ nhắn tin chăm sóc, gọi điện, đến buổi tư vấn — người bán hàng luôn <strong>nghĩ và nói ra những điều thực sự có lợi nhất cho khách hàng</strong>, chứ không phải điều có lợi cho bản thân hay công ty. Chỉ giới thiệu sản phẩm phù hợp với tài chính, thời gian và năng lực hiện tại của khách hàng — không cố bán chương trình khác chỉ vì nó có giá trị cao hơn nếu không phù hợp.</p>
+      <p>Khi khách hàng cảm nhận được rằng người bán đang thực sự nghĩ cho họ, họ sẽ tin tưởng hơn rất nhiều — điều này làm nền cho toàn bộ quá trình chốt sale phía sau.</p>
+      <p>Cần phân biệt rõ giữa "nói điều có lợi cho khách" và việc <strong>tự ý quyết định thay khách hàng</strong> rằng họ "không phù hợp" hay "không đủ khả năng" — làm vậy là đang tước quyền lựa chọn của họ trước khi họ tự nói ra. Nguyên tắc đúng là luôn trình bày đầy đủ và trung thực về giải pháp phù hợp nhất, còn quyết định cuối cùng nên để chính khách hàng đưa ra.</p>
+    </section>
+
+    <hr class="rule">
+
+    <section id="closing15">
+      <div class="sec-head"><span class="sec-num">11</span><h2>Kỹ thuật Closing — 15 kịch bản chốt đơn</h2></div>
+      <p>Các kỹ thuật chốt đơn dưới đây được tổng hợp và điều chỉnh cho phù hợp với sản phẩm giáo dục/coaching, dựa trên kinh nghiệm thực tế bán các sản phẩm giá trị cao (high-ticket).</p>
+
+      <div class="quickref">
+        <div class="qr-item"><span class="qr-num">01</span>Chốt giả định</div>
+        <div class="qr-item"><span class="qr-num">02</span>Chốt lựa chọn</div>
+        <div class="qr-item"><span class="qr-num">03</span>Khẩn cấp thời gian thực</div>
+        <div class="qr-item"><span class="qr-num">04</span>Giá theo hình thức TT</div>
+        <div class="qr-item"><span class="qr-num">05</span>Tăng giá theo thời gian</div>
+        <div class="qr-item"><span class="qr-num">06</span>Sân khấu / đám đông</div>
+        <div class="qr-item"><span class="qr-num">07</span>Theo cặp / hệ thống</div>
+        <div class="qr-item"><span class="qr-num">08</span>Cá nhân hoá ưu đãi</div>
+        <div class="qr-item"><span class="qr-num">09</span>Quyền sở hữu tương lai</div>
+        <div class="qr-item"><span class="qr-num">10</span>Tóm tắt lợi ích</div>
+        <div class="qr-item"><span class="qr-num">11</span>Góc nhìn tài chính</div>
+        <div class="qr-item"><span class="qr-num">12</span>Chuỗi câu hỏi đồng ý</div>
+        <div class="qr-item"><span class="qr-num">13</span>Câu chuyện tương tự</div>
+        <div class="qr-item"><span class="qr-num">14</span>Viễn cảnh tương lai</div>
+        <div class="qr-item"><span class="qr-num">15</span>Đảo ngược rủi ro</div>
+        <div class="qr-item"><span class="qr-num">+</span>Đẩy người ra</div>
+      </div>
+
+      <div class="tech-list">
+        <div class="tech-row"><span class="t-num">01</span><div><h4>Chốt giả định (Assumptive Close)</h4><p>Nói chuyện với khách hàng như thể họ đã quyết định mua rồi — hỏi trực tiếp về bước tiếp theo, không hỏi "anh có mua không". Ví dụ: "Anh muốn thanh toán bằng chuyển khoản hay thẻ?"</p></div></div>
+        <div class="tech-row"><span class="t-num">02</span><div><h4>Chốt bằng lựa chọn (Alternative Choice)</h4><p>Đưa 2 lựa chọn cụ thể để khách chọn 1, thay vì câu hỏi mở dễ bị từ chối. Ví dụ: "Thứ Bảy hay Chủ nhật tuần này tiện hơn?" thay vì "cuối tuần này rảnh không".</p></div></div>
+        <div class="tech-row"><span class="t-num">03</span><div><h4>Chốt khẩn cấp bằng giá theo thời gian thực</h4><p>Ưu đãi chỉ áp dụng trong khoảng thời gian ngắn (theo phiên truy cập) — nếu khách không hành động ngay, giá sẽ tăng hoặc ưu đãi biến mất khi quay lại.</p></div></div>
+        <div class="tech-row"><span class="t-num">04</span><div><h4>Chốt theo hình thức thanh toán</h4><p>Thanh toán trọn gói ngay giá thấp hơn; trả góp nhiều lần tổng giá cao hơn — tạo động lực ưu tiên thanh toán toàn bộ ngay.</p></div></div>
+        <div class="tech-row"><span class="t-num">05</span><div><h4>Tăng giá theo thời gian (Early-Bird)</h4><p>Giá tăng dần theo từng mốc thời gian trước khoá học — mua sớm giá rẻ, mua muộn giá cao, tạo động lực chốt sớm.</p></div></div>
+        <div class="tech-row"><span class="t-num">06</span><div><h4>Chốt trên sân khấu / đám đông</h4><p>Tận dụng năng lượng tập thể — khởi động, âm nhạc, vận động cơ thể trước khi đưa offer; kết hợp hiệu ứng khan hiếm và hiệu ứng đám đông.</p></div></div>
+        <div class="tech-row"><span class="t-num">07</span><div><h4>Chốt theo cặp / theo hệ thống (Team Close)</h4><p>Hai người cùng hỗ trợ chốt một khách hàng (một dẫn chuyện, một "cấp trên"/chuyên gia xác nhận) — tạo thêm uy tín, sức nặng cho lời đề nghị.</p></div></div>
+        <div class="tech-row"><span class="t-num">08</span><div><h4>Cá nhân hoá ưu đãi</h4><p>Nói với khách hàng rằng ưu đãi này dành riêng cho họ ("em xin riêng cho anh") — tạo cảm giác được quan tâm đặc biệt.</p></div></div>
+        <div class="tech-row"><span class="t-num">09</span><div><h4>Quyền sở hữu tương lai (Future Ownership)</h4><p>Giúp khách hàng tưởng tượng như đã sở hữu và đang sử dụng sản phẩm — mô tả cụ thể cuộc sống/công việc sẽ thay đổi ra sao.</p></div></div>
+        <div class="tech-row"><span class="t-num">10</span><div><h4>Tóm tắt lợi ích trước khi chốt (Summary Close)</h4><p>Trước khi hỏi hình thức thanh toán, tóm tắt ngắn gọn toàn bộ lợi ích/giá trị khách hàng nhận được trên một danh sách gọn.</p></div></div>
+        <div class="tech-row"><span class="t-num">11</span><div><h4>Chốt bằng góc nhìn tài chính (Financial Reframe)</h4><p>Chia nhỏ chi phí theo thời gian (ví dụ: 20 triệu/năm ≈ 55.000đ/ngày) để thấy chi phí thực ra rất nhỏ so với lợi ích dài hạn.</p></div></div>
+        <div class="tech-row"><span class="t-num">12</span><div><h4>Chuỗi câu hỏi đồng ý nhỏ (Series of Yes)</h4><p>Đặt liên tiếp các câu hỏi khách dễ trả lời "đúng/hợp lý", tạo quán tính đồng thuận đến câu hỏi chốt cuối cùng.</p></div></div>
+        <div class="tech-row"><span class="t-num">13</span><div><h4>Chốt bằng câu chuyện tương tự (Social Proof)</h4><p>Kể câu chuyện thật về người có hoàn cảnh tương tự đã vượt qua rào cản và thành công — hoá giải nghi ngờ không cần tranh luận.</p></div></div>
+        <div class="tech-row"><span class="t-num">14</span><div><h4>Trước bằng viễn cảnh tương lai (Future Pacing)</h4><p>Đặt câu hỏi giúp khách nhìn về 1–2 năm sau nếu hành động ngay hôm nay so với việc tiếp tục trì hoãn.</p></div></div>
+        <div class="tech-row"><span class="t-num">15</span><div><h4>Đảo ngược rủi ro (Risk Reversal)</h4><p>Chuyển rủi ro về phía người bán bằng cam kết hoàn tiền rõ ràng — khách cảm thấy an toàn hơn vì "không có gì để mất".</p></div></div>
+        <div class="tech-row"><span class="t-num">+</span><div><h4>Đẩy người ra (Take-away Close)</h4><p>Với khách còn lưỡng lự quá lâu, chủ động nói "có thể chưa phù hợp lúc này" — đôi khi khiến khách tự thấy tiếc và chủ động quay lại.</p></div></div>
+      </div>
+
+      <p>Nguyên tắc xuyên suốt của cả 15 kỹ thuật: <strong>không bao giờ giảm giá để chốt được đơn</strong> — giảm giá làm mất giá trị cảm nhận. Nếu khách còn do dự vì giá, chỉ nên linh hoạt về hình thức/thời hạn thanh toán (kỹ thuật 04) hoặc tận dụng tính khẩn cấp theo thời gian (kỹ thuật 05), không hạ giá gốc.</p>
+    </section>
+
+    <hr class="rule">
+
+    <section id="bttm">
+      <div class="sec-head"><span class="sec-num">12</span><h2>Cấu trúc một cuộc tư vấn: Biết → Thích → Tin → Mua</h2></div>
+      <p>Bất kỳ giao dịch nào — dù 5 phút hay kéo dài nhiều buổi — đều đi qua 4 giai đoạn tâm lý của khách hàng:</p>
+      <div class="flow4">
+        <div class="node"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z" stroke="#fff" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="#fff" stroke-width="1.8"/></svg></div><b>BIẾT</b></div>
+        <span class="arrow">→</span>
+        <div class="node"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 20s-8-4.8-8-11a4.8 4.8 0 0 1 8-3.5A4.8 4.8 0 0 1 20 9c0 6.2-8 11-8 11Z" stroke="#fff" stroke-width="1.8"/></svg></div><b>THÍCH</b></div>
+        <span class="arrow">→</span>
+        <div class="node"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z" stroke="#fff" stroke-width="1.8"/><path d="M9.5 12l2 2 3.5-3.5" stroke="#fff" stroke-width="1.8"/></svg></div><b>TIN</b></div>
+        <span class="arrow">→</span>
+        <div class="node"><div class="icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 10l4-3 4 2 4-2 4 3M4 12v6a1 1 0 0 0 1 1h3v-4h4v4h3a1 1 0 0 0 1-1v-6" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></div><b>MUA</b></div>
+      </div>
+      <ul>
+        <li><strong>Biết:</strong> khách hàng biết đến mình/sản phẩm (qua quảng cáo, hội thảo, giới thiệu…).</li>
+        <li><strong>Thích:</strong> khách hàng có cảm tình với người bán/chuyên gia (qua thái độ, sự đồng cảm, ấn tượng ban đầu).</li>
+        <li><strong>Tin:</strong> khách hàng tin tưởng vào năng lực/uy tín — niềm tin cần thời gian, tìm hiểu, bằng chứng.</li>
+        <li><strong>Mua:</strong> khi đã tin, khách hàng mới đưa ra quyết định mua.</li>
+      </ul>
+
+      <p>Ứng với 4 giai đoạn này là quy trình gợi ý cho một cuộc tư vấn:</p>
+      <div class="stepper">
+        <div class="step"><h4>1. Chào hỏi</h4><p>Giới thiệu bản thân, lý do liên hệ. Ví dụ: "Em chào anh, em liên hệ từ chương trình thử thách 3 ngày anh vừa đăng ký, không biết anh có tiện nghe máy không ạ?"</p></div>
+        <div class="step"><h4>2. Phá băng</h4><p>Hỏi thăm nghề nghiệp, tìm điểm chung, tạo không khí thoải mái trước khi vào nội dung chính.</p></div>
+        <div class="step"><h4>3. Tìm hiểu vấn đề (xoáy sâu)</h4><p>Hỏi về công việc hiện tại, vấn đề đang gặp. Xoáy sâu: "Nếu giải quyết được vấn đề này, thu nhập của anh sẽ thay đổi ra sao? Còn nếu chưa giải quyết được thì sao?"</p></div>
+        <div class="step"><h4>4. Trình bày giải pháp (Offer)</h4><p>Giới thiệu chương trình như giải pháp phù hợp đúng vấn đề vừa tìm hiểu — không dàn trải toàn bộ tính năng.</p></div>
+        <div class="step"><h4>5. Closing</h4><p>Áp dụng một trong 15 kỹ thuật chốt ở phần 12.</p></div>
+      </div>
+      <p><strong>Lưu ý:</strong> để đến bước "Thích" và "Tin" không nhất thiết phải biết rất nhiều thông tin cá nhân khách hàng — niềm tin đến từ chất lượng tương tác, sự chân thành và thời gian, không chỉ từ khối lượng thông tin.</p>
+    </section>
+
+    <hr class="rule">
+
+    <section id="objections">
+      <div class="sec-head"><span class="sec-num">13</span><h2>Xử lý từ chối</h2></div>
+      <p>Từ chối thường rơi vào một trong các nhóm sau:</p>
+      <div class="obj-grid">
+        <div class="obj-card">
+          <h4>NHÓM 1</h4>
+          <div class="obj-quote">"Giá cao quá."</div>
+          <p>Hỏi lại khách đang so sánh giá với cái gì. Nếu so với sản phẩm rẻ hơn: làm rõ khác biệt chất lượng/đồng hành. Rủi ro lớn nhất của sản phẩm giá rẻ là mất niềm tin vào giải pháp nếu tự học không ra kết quả.</p>
+        </div>
+        <div class="obj-card">
+          <h4>NHÓM 2</h4>
+          <div class="obj-quote">"Không có thời gian."</div>
+          <p>Thường ẩn một vấn đề sâu hơn: mong muốn thay đổi chưa đủ lớn. Hỏi ngược: "Vấn đề này anh định để kéo dài đến bao giờ?" Nhấn vào phần thưởng dài hạn.</p>
+        </div>
+        <div class="obj-card">
+          <h4>NHÓM 3</h4>
+          <div class="obj-quote">"Không có tiền."</div>
+          <p>Phân biệt: thực sự không có khả năng chi trả, hay mong muốn chưa đủ lớn để tìm cách xoay sở. Đề xuất trả góp; công ty có chính sách xem xét riêng cho trường hợp khó khăn thật.</p>
+        </div>
+        <div class="obj-card">
+          <h4>NHÓM 4</h4>
+          <div class="obj-quote">"Không có nhu cầu / để tôi tham khảo thêm."</div>
+          <p>Câu trả lời mơ hồ — có thể là từ chối khéo, chưa rõ giá trị, hoặc ngại chia sẻ lý do thật. Cần khai thác thêm, tránh nhận câu trả lời chung chung là dừng lại.</p>
+        </div>
+        <div class="obj-card">
+          <h4>NHÓM 5</h4>
+          <div class="obj-quote">"Để tôi hỏi ý kiến chồng/vợ."</div>
+          <p>Phần lớn do người thân chưa có đủ thông tin. Đề nghị trực tiếp trao đổi cùng người thân đó; có thể chốt tạm một phần nhỏ để giữ ưu đãi trong lúc khách trao đổi thêm.</p>
+        </div>
+        <div class="obj-card">
+          <h4>NHÓM 6</h4>
+          <div class="obj-quote">"Tôi không chắc có tin được không."</div>
+          <p>Đưa bằng chứng cụ thể thay vì tranh luận: kết quả thực tế ẩn danh, dữ liệu real-time, video trải nghiệm học viên, hoặc mời thử một phần nhỏ. Giữ vị thế chuyên gia tự tin, không "cầu xin" khách tin tưởng.</p>
+        </div>
+      </div>
+
+      <p>Một câu phản hồi khéo cho mỗi nhóm từ chối thường chưa đủ để chốt ngay — từ chối là bước khởi đầu của quá trình bán, không phải điểm kết thúc. Với mỗi nhóm, đặc biệt NHÓM 3 "không có tiền", cần thêm một lịch trình theo sát nhiều lượt (gọi lại, nhắn lại theo mốc thời gian cụ thể), vì phần lớn đơn chốt được chỉ sau lần liên hệ thứ 5 trở lên, không phải từ một lần phản hồi duy nhất.</p>
+    </section>
+
+    <hr class="rule">
+
+    <section id="probability">
+      <div class="sec-head"><span class="sec-num">14</span><h2>Tư duy xác suất &amp; nguyên tắc theo sát dài hạn</h2></div>
+      <p>Bán hàng, xét cho cùng, là một cuộc chơi xác suất — không phải ai gặp cũng đồng ý, nhưng nếu duy trì đủ số lượng tương tác, kết quả trung bình sẽ ổn định theo quy luật số lớn. Mỗi lần bị từ chối chỉ là một phần tất nhiên của quy trình, không phải thất bại cá nhân.</p>
+      <div class="disc-grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));">
+        <div class="callout" style="margin:0;"><span class="callout-label">NGUYÊN TẮC "LIÊN HỆ THỨ 7"</span><p style="margin:0">Phần lớn giá trị chốt đơn đến từ những lần liên hệ/chăm sóc sau, không phải lần đầu. Không nên từ bỏ sau 1–2 lần liên hệ không thành công.</p></div>
+        <div class="callout" style="margin:0;"><span class="callout-label">NGUYÊN TẮC "ĐÚNG THỜI ĐIỂM" (12 GIỜ)</span><p style="margin:0">Khách chưa quyết định không hẳn vì không quan tâm, mà vì thời điểm chưa phù hợp. Duy trì tương tác đều đặn, đến lúc phù hợp họ có thể chủ động quay lại.</p></div>
+      </div>
+
+      <p>Nói cách khác, bán hàng là một <strong>trò chơi số lượng</strong>: duy trì khối lượng tiếp cận đủ lớn mỗi ngày mới giữ được xác suất chốt ổn định. Nếu tỉ lệ chốt hiện tại còn thấp, đừng chỉ "chấp nhận quy luật số lớn" — hãy nhân 10 lần khối lượng hành động mỗi ngày, đó mới là cách thực sự cải thiện kết quả.</p>
+    </section>
+
+    <hr class="rule">
+
+    <section id="honest">
+      <div class="sec-head"><span class="sec-num">15</span><h2>Nghệ thuật nói khéo — dùng đòn bẩy, không nói dối</h2></div>
+      <p>Khi chia sẻ kết quả để tăng độ tin cậy, cách nói khéo léo là dùng <strong>kết quả của tập thể/đội ngũ</strong> thay vì chỉ kết quả cá nhân — vừa trung thực, vừa tạo uy tín mà không cần khoe khoang trực tiếp.</p>
+      <div class="callout gold">
+        <span class="callout-label">NGUYÊN TẮC QUAN TRỌNG</span>
+        <p style="margin:0"><strong>Nói khéo, nhưng không nói dối.</strong> Không cam kết những điều không chắc chắn — có thể chia sẻ trung bình thời gian để có kết quả dựa trên quan sát thực tế, đồng thời làm rõ kết quả còn phụ thuộc vào sự cố gắng của từng người.</p>
+      </div>
+      <p>Nói khéo không đồng nghĩa với rón rén hay sợ làm phiền khách. Thứ giết chết nhiều deal nhất không phải là bán quá dồn dập, mà là người bán không đủ can đảm hỏi mua đủ số lần cần thiết — cứ hỏi thẳng, miễn là trung thực.</p>
+    </section>
+
+    <hr class="rule">
+
+    <section id="texting">
+      <div class="sec-head"><span class="sec-num">16</span><h2>Kỹ năng nhắn tin chăm sóc khách hàng</h2></div>
+      <p>Vì phần lớn tương tác chăm sóc diễn ra qua tin nhắn (Zalo, Telegram…), cách nhắn tin ảnh hưởng lớn đến cảm nhận của khách hàng:</p>
+      <ul>
+        <li>Luôn giữ <strong>năng lượng tích cực, vui vẻ</strong> — dùng emoji/sticker phù hợp, tránh nhắn tin khô khan/quá nghiêm túc.</li>
+        <li>Cố gắng là người <strong>chủ động nhắn/phản hồi sau cùng</strong> trong cuộc trò chuyện — thể hiện sự quan tâm, trách nhiệm.</li>
+        <li>Với câu hỏi nhỏ, phản hồi nhanh bằng biểu tượng cảm xúc để khách thấy được ghi nhận, không cần lúc nào cũng trả lời dài.</li>
+      </ul>
+    </section>
+
+    <footer>
+      <span>SALE MASTER — Tài liệu đào tạo nội bộ, Salomon Education</span>
+      <span>Phần 1: Nền tảng Sale · Phần 2: Chiến thuật Sale</span>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var toggle = document.getElementById('navToggle');
+  var toc = document.getElementById('toc');
+  if(toggle && toc){
+    toggle.addEventListener('click', function(){ toc.classList.toggle('open'); });
+    toc.querySelectorAll('a').forEach(function(a){
+      a.addEventListener('click', function(){ toc.classList.remove('open'); });
+    });
+  }
+  var links = document.querySelectorAll('.toc a');
+  var sections = Array.prototype.map.call(links, function(a){
+    return document.querySelector(a.getAttribute('href'));
+  });
+  if('IntersectionObserver' in window){
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          var id = '#' + entry.target.id;
+          links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === id); });
+        }
+      });
+    }, { rootMargin: '-40% 0px -50% 0px' });
+    sections.forEach(function(s){ if(s) obs.observe(s); });
+  }
+})();
+</script>
